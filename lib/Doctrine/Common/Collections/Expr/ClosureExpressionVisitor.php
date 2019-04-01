@@ -16,6 +16,8 @@ use function strpos;
 use function strtoupper;
 use function substr;
 
+use Ramsey\Uuid\UuidInterface;
+
 /**
  * Walks an expression graph and turns it into a PHP closure.
  *
@@ -125,12 +127,28 @@ class ClosureExpressionVisitor extends ExpressionVisitor
         switch ($comparison->getOperator()) {
             case Comparison::EQ:
                 return static function ($object) use ($field, $value) : bool {
-                    return ClosureExpressionVisitor::getObjectFieldValue($object, $field) === $value;
+                    $fieldValue = ClosureExpressionVisitor::getObjectFieldValue($object, $field);
+
+                    if (null !== $fieldValue && null !== $value) {
+                        if ($fieldValue instanceof UuidInterface) {
+                            return $fieldValue->equals($value);
+                        }
+                    }
+
+                    return $fieldValue === $value;
                 };
 
             case Comparison::NEQ:
                 return static function ($object) use ($field, $value) : bool {
-                    return ClosureExpressionVisitor::getObjectFieldValue($object, $field) !== $value;
+                    $fieldValue = ClosureExpressionVisitor::getObjectFieldValue($object, $field);
+
+                    if (null !== $fieldValue && null !== $value) {
+                        if ($fieldValue instanceof UuidInterface) {
+                            return ! $fieldValue->equals($value);
+                        }
+                    }
+
+                    return $fieldValue !== $value;
                 };
 
             case Comparison::LT:
