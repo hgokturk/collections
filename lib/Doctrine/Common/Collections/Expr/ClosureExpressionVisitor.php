@@ -138,6 +138,8 @@ class ClosureExpressionVisitor extends ExpressionVisitor
                     if (null !== $fieldValue && null !== $value) {
                         if ($fieldValue instanceof UuidInterface) {
                             return $fieldValue->equals($value);
+                        } elseif ($fieldValue instanceof \DateTime) {
+                            return $fieldValue->getTimestamp() === $value->getTimestamp();
                         }
                     }
 
